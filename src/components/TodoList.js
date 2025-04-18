@@ -6,6 +6,7 @@ const TodoList = () => {
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
 
     // Fetch todos from the backend
     const fetchTodos = async () => {
@@ -29,6 +30,7 @@ const TodoList = () => {
             await axios.post('/.netlify/functions/todos', { text });
             setText('');
             fetchTodos();
+            setIsModalOpen(false); // Close the modal after adding
         } catch (error) {
             console.error('Error adding todo:', error);
             setError('An error occurred while adding the todo.');
@@ -80,15 +82,44 @@ const TodoList = () => {
             {/* Display error if there's one */}
             {error && <p className="text-red-500">{error}</p>}
 
-            <div className="flex mb-2">
-                <input
-                    className="border p-2 flex-grow"
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    placeholder="New Task"
-                />
-                <button className="bg-blue-500 text-white px-4" onClick={addTodo}>Add</button>
-            </div>
+            {/* Button to open modal */}
+            <button
+                className="bg-blue-500 text-white px-4 py-2 mb-4"
+                onClick={() => setIsModalOpen(true)}
+            >
+                Add New Todo
+            </button>
+
+            {/* Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-80">
+                        <h2 className="text-xl mb-4">Add a New Todo</h2>
+                        <div className="flex mb-2">
+                            <input
+                                className="border p-2 flex-grow"
+                                value={text}
+                                onChange={(e) => setText(e.target.value)}
+                                placeholder="New Task"
+                            />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <button
+                                className="bg-blue-500 text-white px-4 py-2"
+                                onClick={addTodo}
+                            >
+                                Add
+                            </button>
+                            <button
+                                className="bg-gray-300 text-gray-700 px-4 py-2"
+                                onClick={() => setIsModalOpen(false)} // Close modal
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Render todo list */}
             <div className="grid grid-cols-1 gap-4">
