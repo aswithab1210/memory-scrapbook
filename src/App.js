@@ -13,7 +13,7 @@ const App = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [editMemoryId, setEditMemoryId] = useState(null);
 
-  const apiBase = "/.netlify/functions/models/memory";  // Adjusted to match your backend
+  const apiBase = "/.netlify/functions/todos.js";  // Adjusted to match your backend
 
   // Fetch all memories
   useEffect(() => {
