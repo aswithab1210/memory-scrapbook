@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaTrash, FaEdit, FaPlus } from 'react-icons/fa'; // Import the + icon
+import { FaTrash, FaEdit, FaPlus } from 'react-icons/fa';
 
 const TodoList = () => {
     const [todos, setTodos] = useState([]);
@@ -12,12 +12,21 @@ const TodoList = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [editTodoId, setEditTodoId] = useState(null);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true); // assume there are more at first
 
-    const fetchTodos = async () => {
+    const fetchTodos = async (page = 1) => {
         setLoading(true);
         try {
-            const res = await axios.get('/.netlify/functions/todos');
-            setTodos(res.data);
+            const res = await axios.get(`/.netlify/functions/todos?page=${page}`);
+            if (page === 1) {
+                setTodos(res.data);
+            } else {
+                setTodos(prev => [...prev, ...res.data]);
+            }
+            if (res.data.length === 0) {
+                setHasMore(false);
+            }
         } catch (error) {
             console.error('Error fetching todos:', error);
             setError('An error occurred while fetching todos.');
@@ -52,11 +61,14 @@ const TodoList = () => {
 
             setText('');
             setImage(null);
-            setImagePreview(null);
-            fetchTodos();
+            setImagePreview(null); 
+
             setIsModalOpen(false);
             setIsEditMode(false);
             setEditTodoId(null);
+            setPage(1);    // Reset to page 1 on change
+            setHasMore(true);
+            fetchTodos(1);
         } catch (error) {
             console.error('Error saving todo:', error);
             setError('An error occurred while saving the todo.');
@@ -69,7 +81,9 @@ const TodoList = () => {
         setLoading(true);
         try {
             await axios.put('/.netlify/functions/todos', { id, completed: !completed });
-            fetchTodos();
+            setPage(1);    // Reset to first page
+            setHasMore(true);
+            fetchTodos(1);
         } catch (error) {
             console.error('Error toggling todo:', error);
             setError('An error occurred while toggling the todo.');
@@ -82,7 +96,9 @@ const TodoList = () => {
         setLoading(true);
         try {
             await axios.delete(`/.netlify/functions/todos?id=${id}`);
-            fetchTodos();
+            setPage(1);    // Reset to first page
+            setHasMore(true);
+            fetchTodos(1);
         } catch (error) {
             console.error('Error deleting todo:', error);
             setError('An error occurred while deleting the todo.');
@@ -101,8 +117,8 @@ const TodoList = () => {
     };
 
     useEffect(() => {
-        fetchTodos();
-    }, []);
+        fetchTodos(page);
+    }, [page]);
 
     return (
         <div className="p-4 max-w-6xl mx-auto">
@@ -123,9 +139,8 @@ const TodoList = () => {
                         setIsModalOpen(true);
                     }}
                 >
-                    {/* Display + on small screens and "Add New Todo" on larger screens */}
-                    <FaPlus className="sm:hidden text-2xl" /> {/* Only visible on small screens */}
-                    <span className="hidden sm:block">Add New Memory</span> {/* Only visible on larger screens */}
+                    <FaPlus className="sm:hidden text-2xl" />
+                    <span className="hidden sm:block">Add New Memory</span>
                 </button>
             </div>
 
@@ -141,17 +156,13 @@ const TodoList = () => {
                                 value={text}
                                 onChange={(e) => setText(e.target.value)}
                                 placeholder="New Task"
-                            />
-
-                            {/* Image Upload Input */}
+                            /> 
                             <input
                                 type="file"
                                 accept="image/*"
                                 className="border p-2"
                                 onChange={handleImageChange}
-                            />
-
-                            {/* Image URL Input */}
+                            /> 
                             <input
                                 type="text"
                                 className="border p-2"
@@ -162,7 +173,7 @@ const TodoList = () => {
                                 }}
                                 value={image && !image.startsWith('data:') ? image : ''}
                             />
-
+                            
                             {imagePreview && (
                                 <img
                                     src={imagePreview}
@@ -218,7 +229,7 @@ const TodoList = () => {
                                         className="text-red-500 hover:text-red-600"
                                         onClick={() => deleteTodo(todo._id)}
                                     >
-                                        <FaTrash className="text-red-500" /> {/* Red bin icon */}
+                                        <FaTrash className="text-red-500" />
                                     </button>
                                 </div>
                             </div>
@@ -226,6 +237,18 @@ const TodoList = () => {
                     </div>
                 ))}
             </div>
+
+            {/* Load More Button */}
+            {hasMore && !loading && (
+                <div className="flex justify-center mt-4">
+                    <button
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                        onClick={() => setPage(prev => prev + 1)}
+                    >
+                        Load More
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
