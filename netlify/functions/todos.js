@@ -1,20 +1,20 @@
 const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config();
 
-const uri = process.env.MONGO_URI; // Ensure this is set correctly in Netlify environment variables
+const uri = process.env.MONGO_URI;  // Make sure your environment variable is set in Netlify!
 const client = new MongoClient(uri);
 let cachedDb = null;
 
 async function connectToDatabase() {
     if (cachedDb) return cachedDb;
     try {
-        console.log("Connecting to MongoDB..."); // Add a log for connection attempt
+        console.log("Connecting to MongoDB...");
         await client.connect();
-        cachedDb = client.db('todo_app');  // The database name
-        console.log("Connected to MongoDB");  // Success log
+        cachedDb = client.db('todo_app');  // your database name
+        console.log("Connected to MongoDB");
         return cachedDb;
     } catch (err) {
-        console.error('Error connecting to MongoDB:', err); // Improved error logging
+        console.error('Error connecting to MongoDB:', err);
         throw err;
     }
 }
@@ -23,13 +23,13 @@ exports.handler = async function(event) {
     const { httpMethod, body, queryStringParameters } = event;
     const db = await connectToDatabase();
     const collection = db.collection('todos');
-    
-    console.log('Received HTTP method:', httpMethod);  // Log the HTTP method
+
+    console.log('Received HTTP method:', httpMethod);
 
     try {
         if (httpMethod === 'GET') {
             const todos = await collection.find({}).toArray();
-            console.log('Fetched todos:', todos); // Log the todos fetched
+            console.log('Fetched todos:', todos);
             return {
                 statusCode: 200,
                 body: JSON.stringify(todos),
@@ -37,9 +37,13 @@ exports.handler = async function(event) {
         }
 
         if (httpMethod === 'POST') {
-            const { text } = JSON.parse(body);
-            console.log('Inserting new todo:', text);  // Log the text being inserted
-            const result = await collection.insertOne({ text, completed: false });
+            const { text, image } = JSON.parse(body);
+            console.log('Inserting new todo:', { text, image });
+            const result = await collection.insertOne({
+                text,
+                image: image || null,  // Save null if no image
+                completed: false
+            });
             return {
                 statusCode: 200,
                 body: JSON.stringify(result),
@@ -47,29 +51,35 @@ exports.handler = async function(event) {
         }
 
         if (httpMethod === 'PUT') {
-            const { id, text, completed } = JSON.parse(body);
-            console.log('Updating todo with ID:', id, 'Text:', text, 'Completed:', completed); // Log update details
+            const { id, text, image, completed } = JSON.parse(body);
+            console.log('Updating todo:', { id, text, image, completed });
+
             if (!ObjectId.isValid(id)) {
                 return { statusCode: 400, body: 'Invalid ID format' };
             }
+
             await collection.updateOne(
                 { _id: new ObjectId(id) },
-                { $set: { text, completed } } // Make sure both text and completed are updated
+                { $set: { text, image, completed } }  // now includes image!
             );
+
             return { statusCode: 200, body: 'Updated' };
         }
 
         if (httpMethod === 'DELETE') {
             const { id } = queryStringParameters;
-            console.log('Deleting todo with ID:', id); // Log delete action
+            console.log('Deleting todo with ID:', id);
+
             if (!ObjectId.isValid(id)) {
                 return { statusCode: 400, body: 'Invalid ID format' };
             }
+
             await collection.deleteOne({ _id: new ObjectId(id) });
             return { statusCode: 200, body: 'Deleted' };
         }
 
         return { statusCode: 405, body: 'Method Not Allowed' };
+
     } catch (err) {
         console.error('Error:', err);
         return { statusCode: 500, body: 'Internal Server Error: ' + err.message };

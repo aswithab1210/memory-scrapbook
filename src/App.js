@@ -8,7 +8,9 @@ function App() {
       <div>
         <TopNav/>
       </div>
-      <TodoList />
+      <div>
+        <TodoList />
+      </div>
     </div>
   );
 }
