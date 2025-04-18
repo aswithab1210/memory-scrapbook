@@ -1,7 +1,7 @@
 const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config();
 
-const uri = process.env.MONGO_URI;  // Make sure your environment variable is set in Netlify!
+const uri = process.env.MONGO_URI;
 const client = new MongoClient(uri);
 let cachedDb = null;
 
@@ -10,7 +10,7 @@ async function connectToDatabase() {
     try {
         console.log("Connecting to MongoDB...");
         await client.connect();
-        cachedDb = client.db('todo_app');  // your database name
+        cachedDb = client.db('todo_app');
         console.log("Connected to MongoDB");
         return cachedDb;
     } catch (err) {
@@ -28,8 +28,19 @@ exports.handler = async function(event) {
 
     try {
         if (httpMethod === 'GET') {
-            const todos = await collection.find({}).toArray();
-            console.log('Fetched todos:', todos);
+            // Pagination support
+            const page = parseInt(queryStringParameters?.page) || 1;
+            const limit = 50;  // safe limit for serverless functions
+            const skip = (page - 1) * limit;
+
+            // Projection to avoid large image data
+            const todos = await collection
+                .find({}, { projection: { text: 1, completed: 1 } })
+                .skip(skip)
+                .limit(limit)
+                .toArray();
+
+            console.log(`Fetched ${todos.length} todos`);
             return {
                 statusCode: 200,
                 body: JSON.stringify(todos),
@@ -41,7 +52,7 @@ exports.handler = async function(event) {
             console.log('Inserting new todo:', { text, image });
             const result = await collection.insertOne({
                 text,
-                image: image || null,  // Save null if no image
+                image: image || null,
                 completed: false
             });
             return {
@@ -60,7 +71,7 @@ exports.handler = async function(event) {
 
             await collection.updateOne(
                 { _id: new ObjectId(id) },
-                { $set: { text, image, completed } }  // now includes image!
+                { $set: { text, image, completed } }
             );
 
             return { statusCode: 200, body: 'Updated' };
