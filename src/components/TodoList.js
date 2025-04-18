@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaTrash } from 'react-icons/fa'; // Import the red bin icon
+import { FaTrash, FaEdit, FaPlus } from 'react-icons/fa'; // Import the + icon
 
 const TodoList = () => {
     const [todos, setTodos] = useState([]);
@@ -13,7 +13,6 @@ const TodoList = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [editTodoId, setEditTodoId] = useState(null);
 
-    
     const fetchTodos = async () => {
         setLoading(true);
         try {
@@ -66,7 +65,6 @@ const TodoList = () => {
         }
     };
 
-
     const toggleTodo = async (id, completed) => {
         setLoading(true);
         try {
@@ -79,7 +77,6 @@ const TodoList = () => {
             setLoading(false);
         }
     };
-
 
     const deleteTodo = async (id) => {
         setLoading(true);
@@ -103,7 +100,6 @@ const TodoList = () => {
         setIsModalOpen(true);
     };
 
-
     useEffect(() => {
         fetchTodos();
     }, []);
@@ -115,12 +111,10 @@ const TodoList = () => {
             {loading && <p className="text-center">Loading...</p>}
             {error && <p className="text-red-500 text-center">{error}</p>}
 
-
-
             {/* Add New Todo Button */}
-            <div className="flex justify-center mb-6">
+            <div className="fixed bottom-4 right-4 sm:relative sm:bottom-auto sm:right-auto sm:mb-6 sm:flex sm:justify-center">
                 <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                    className="bg-blue-500 text-white p-4 rounded-full hover:bg-blue-600 transition sm:px-4 sm:py-2 sm:rounded sm:bg-blue-500"
                     onClick={() => {
                         setText('');
                         setImage(null);
@@ -129,7 +123,9 @@ const TodoList = () => {
                         setIsModalOpen(true);
                     }}
                 >
-                    Add New Todo
+                    {/* Display + on small screens and "Add New Todo" on larger screens */}
+                    <FaPlus className="sm:hidden text-2xl" /> {/* Only visible on small screens */}
+                    <span className="hidden sm:block">Add New Todo</span> {/* Only visible on larger screens */}
                 </button>
             </div>
 
@@ -216,7 +212,7 @@ const TodoList = () => {
                                         className="text-yellow-500 hover:text-yellow-600"
                                         onClick={() => editTodo(todo._id, todo.text, todo.image)}
                                     >
-                                        Edit
+                                        <FaEdit className="text-yellow-500" />
                                     </button>
                                     <button
                                         className="text-red-500 hover:text-red-600"
