@@ -4,6 +4,8 @@ import axios from 'axios';
 const TodoList = () => {
     const [todos, setTodos] = useState([]);
     const [text, setText] = useState('');
+    const [image, setImage] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,18 +26,33 @@ const TodoList = () => {
         }
     };
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImage(reader.result);  // base64 encoded string
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const saveTodo = async () => {
         if (!text.trim()) return;
         setLoading(true);
         try {
+            const todoData = { text, image };
+
             if (isEditMode) {
-                await axios.put('/.netlify/functions/todos', { id: editTodoId, text, completed: false });
-            } else 
-            {
-                await axios.post('/.netlify/functions/todos', { text });
+                await axios.put('/.netlify/functions/todos', { id: editTodoId, ...todoData, completed: false });
+            } else {
+                await axios.post('/.netlify/functions/todos', todoData);
             }
+
             setText('');
+            setImage(null);
+            setImagePreview(null);
             fetchTodos();
             setIsModalOpen(false);
             setIsEditMode(false);
@@ -76,13 +93,15 @@ const TodoList = () => {
         }
     };
 
-
-    const editTodo = (id, currentText) => {
+    const editTodo = (id, currentText, currentImage) => {
         setIsEditMode(true);
         setEditTodoId(id);
         setText(currentText);
+        setImage(currentImage);
+        setImagePreview(currentImage);
         setIsModalOpen(true);
     };
+
 
 
     useEffect(() => {
@@ -99,7 +118,13 @@ const TodoList = () => {
             <div className="flex justify-center mb-6">
                 <button
                     className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => {
+                        setText('');
+                        setImage(null);
+                        setImagePreview(null);
+                        setIsEditMode(false);
+                        setIsModalOpen(true);
+                    }}
                 >
                     Add New Todo
                 </button>
@@ -112,14 +137,27 @@ const TodoList = () => {
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-80">
                         <h2 className="text-xl mb-4">{isEditMode ? 'Edit Todo' : 'Add a New Todo'}</h2>
-                        <div className="flex mb-2">
+
+                        <div className="flex flex-col gap-2 mb-2">
                             <input
-                                className="border p-2 flex-grow"
+                                className="border p-2"
                                 value={text}
                                 onChange={(e) => setText(e.target.value)}
                                 placeholder="New Task"
                             />
+
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="border p-2"
+                                onChange={handleImageChange}
+                            />
+
+                            {imagePreview && (
+                                <img src={imagePreview} alt="Preview" className="mt-2 rounded w-full" />
+                            )}
                         </div>
+
                         <div className="flex justify-end gap-2">
                             <button
                                 className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -141,26 +179,31 @@ const TodoList = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {todos.map(todo => (
                     <div key={todo._id} className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition">
-                        <div className="flex justify-between items-center">
-                            <span
-                                onClick={() => toggleTodo(todo._id, todo.completed)}
-                                className={`cursor-pointer ${todo.completed ? 'line-through text-gray-400' : ''}`}
-                            >
-                                {todo.text}
-                            </span>
-                            <div className="flex space-x-2">
-                                <button
-                                    className="text-yellow-500 hover:text-yellow-600"
-                                    onClick={() => editTodo(todo._id, todo.text)}
+                        <div className="flex flex-col">
+                            {todo.image && (
+                                <img src={todo.image} alt="Todo" className="rounded mb-2" />
+                            )}
+                            <div className="flex justify-between items-center">
+                                <span
+                                    onClick={() => toggleTodo(todo._id, todo.completed)}
+                                    className={`cursor-pointer ${todo.completed ? 'line-through text-gray-400' : ''}`}
                                 >
-                                    Edit
-                                </button>
-                                <button
-                                    className="text-red-500 hover:text-red-600"
-                                    onClick={() => deleteTodo(todo._id)}
-                                >
-                                    X
-                                </button>
+                                    {todo.text}
+                                </span>
+                                <div className="flex space-x-2">
+                                    <button
+                                        className="text-yellow-500 hover:text-yellow-600"
+                                        onClick={() => editTodo(todo._id, todo.text, todo.image)}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="text-red-500 hover:text-red-600"
+                                        onClick={() => deleteTodo(todo._id)}
+                                    >
+                                        X
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
