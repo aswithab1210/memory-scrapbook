@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaTrash } from 'react-icons/fa'; // Import the red bin icon
+import { FaTrash , FaEdit } from 'react-icons/fa'; // Import the red bin icon
 
 const TodoList = () => {
     const [todos, setTodos] = useState([]);
@@ -66,7 +66,7 @@ const TodoList = () => {
         }
     };
 
-    
+
     const toggleTodo = async (id, completed) => {
         setLoading(true);
         try {
@@ -104,7 +104,6 @@ const TodoList = () => {
     };
 
 
-    
     useEffect(() => {
         fetchTodos();
     }, []);
@@ -116,9 +115,46 @@ const TodoList = () => {
             {loading && <p className="text-center">Loading...</p>}
             {error && <p className="text-red-500 text-center">{error}</p>}
 
-            <div className="flex justify-center mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {todos.map(todo => (
+                    <div key={todo._id} className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition">
+                        <div className="flex flex-col">
+                            <img
+                                src={todo.image || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHURB9ii8O885EHuKuUJOLPmU270GbnAVHJQ&s"}
+                                alt="Todo"
+                                className="rounded mb-2 w-full h-48 object-cover"
+                            />
+                            <div className="flex flex-col">
+                                <span
+                                    onClick={() => toggleTodo(todo._id, todo.completed)}
+                                    className={`cursor-pointer ${todo.completed ? 'line-through text-gray-400' : ''}`}
+                                >
+                                    {todo.text}
+                                </span>
+                                <div className="flex justify-center gap-2 mt-2">
+                                    <button
+                                        className="text-yellow-500 hover:text-yellow-600"
+                                        onClick={() => editTodo(todo._id, todo.text, todo.image)}
+                                    >
+                                        <FaEdit className="text-yellow-500" />
+                                    </button>
+                                    <button
+                                        className="text-red-500 hover:text-red-600"
+                                        onClick={() => deleteTodo(todo._id)}
+                                    >
+                                        <FaTrash className="text-red-500" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Fixed Add New Todo Button */}
+            <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full sm:w-auto sm:left-auto sm:right-6">
                 <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                    className="bg-blue-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-600 transition"
                     onClick={() => {
                         setText('');
                         setImage(null);
@@ -191,42 +227,7 @@ const TodoList = () => {
                     </div>
                 </div>
             )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {todos.map(todo => (
-                    <div key={todo._id} className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition">
-                        <div className="flex flex-col">
-                            <img
-                                src={todo.image || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHURB9ii8O885EHuKuUJOLPmU270GbnAVHJQ&s"}
-                                alt="Todo"
-                                className="rounded mb-2 w-full h-48 object-cover"
-                            />
-                            <div className="flex flex-col">
-                                <span
-                                    onClick={() => toggleTodo(todo._id, todo.completed)}
-                                    className={`cursor-pointer ${todo.completed ? 'line-through text-gray-400' : ''}`}
-                                >
-                                    {todo.text}
-                                </span>
-                                <div className="flex justify-center gap-2 mt-2">
-                                    <button
-                                        className="text-yellow-500 hover:text-yellow-600"
-                                        onClick={() => editTodo(todo._id, todo.text, todo.image)}
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        className="text-red-500 hover:text-red-600"
-                                        onClick={() => deleteTodo(todo._id)}
-                                    >
-                                        <FaTrash className="text-red-500" /> {/* Red bin icon */}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
+    
         </div>
     );
 };
