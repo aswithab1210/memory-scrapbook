@@ -97,16 +97,17 @@ exports.handler = async (event) => {
             };
         }
 
-        // DELETE: Remove Todo
+        
         if (httpMethod === 'DELETE') {
-            const { id } = JSON.parse(body);
+            const { id } = queryStringParameters;
             const result = await collection.deleteOne({ _id: new ObjectId(id) });
-
+        
             return {
                 statusCode: 200,
                 body: JSON.stringify(result),
             };
         }
+        
 
         // Invalid Method
         return {
