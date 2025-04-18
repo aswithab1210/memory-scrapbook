@@ -31,7 +31,7 @@ const TodoList = () => {
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setImage(reader.result);  // base64 encoded string
+                setImage(reader.result);
                 setImagePreview(reader.result);
             };
             reader.readAsDataURL(file);
@@ -64,6 +64,7 @@ const TodoList = () => {
             setLoading(false);
         }
     };
+
 
 
     const toggleTodo = async (id, completed) => {
@@ -103,7 +104,7 @@ const TodoList = () => {
     };
 
 
-
+    
     useEffect(() => {
         fetchTodos();
     }, []);
@@ -146,11 +147,24 @@ const TodoList = () => {
                                 placeholder="New Task"
                             />
 
+                            {/* Image Upload Input */}
                             <input
                                 type="file"
                                 accept="image/*"
                                 className="border p-2"
                                 onChange={handleImageChange}
+                            />
+
+                            {/* Image URL Input */}
+                            <input
+                                type="text"
+                                className="border p-2"
+                                placeholder="or paste Image URL"
+                                onChange={(e) => {
+                                    setImage(e.target.value);
+                                    setImagePreview(e.target.value);
+                                }}
+                                value={image && !image.startsWith('data:') ? image : ''}
                             />
 
                             {imagePreview && (
@@ -180,9 +194,11 @@ const TodoList = () => {
                 {todos.map(todo => (
                     <div key={todo._id} className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition">
                         <div className="flex flex-col">
-                            {todo.image && (
-                                <img src={todo.image} alt="Todo" className="rounded mb-2" />
-                            )}
+                            <img
+                                src={todo.image || "https://via.placeholder.com/300x200.png?text=No+Image"}
+                                alt="Todo"
+                                className="rounded mb-2"
+                            />
                             <div className="flex justify-between items-center">
                                 <span
                                     onClick={() => toggleTodo(todo._id, todo.completed)}
