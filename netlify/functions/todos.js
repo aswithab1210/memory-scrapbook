@@ -1,7 +1,8 @@
 const { MongoClient, ObjectId } = require('mongodb');
 require('dotenv').config();
 
-const uri = process.env.MONGO_URI;  // Make sure this is set in your Netlify environment variables
+const uri = process.env.MONGO_URI;
+  // Make sure this is set in your Netlify environment variables
 const client = new MongoClient(uri);
 let cachedDb = null;
 
