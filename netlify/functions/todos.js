@@ -47,14 +47,14 @@ exports.handler = async function(event) {
         }
 
         if (httpMethod === 'PUT') {
-            const { id, completed } = JSON.parse(body);
-            console.log('Updating todo with ID:', id, 'Completed:', completed); // Log update details
+            const { id, text, completed } = JSON.parse(body);
+            console.log('Updating todo with ID:', id, 'Text:', text, 'Completed:', completed); // Log update details
             if (!ObjectId.isValid(id)) {
                 return { statusCode: 400, body: 'Invalid ID format' };
             }
             await collection.updateOne(
                 { _id: new ObjectId(id) },
-                { $set: { completed } }
+                { $set: { text, completed } } // Make sure both text and completed are updated
             );
             return { statusCode: 200, body: 'Updated' };
         }

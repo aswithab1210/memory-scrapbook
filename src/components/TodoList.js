@@ -31,7 +31,7 @@ const TodoList = () => {
         try {
             if (isEditMode) {
                 // Update an existing todo
-                await axios.put('/.netlify/functions/todos', { id: editTodoId, text });
+                await axios.put('/.netlify/functions/todos', { id: editTodoId, text, completed: false }); // Include the text
             } else {
                 // Add a new todo
                 await axios.post('/.netlify/functions/todos', { text });
