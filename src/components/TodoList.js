@@ -104,7 +104,7 @@ const TodoList = () => {
     };
 
 
-    
+
     useEffect(() => {
         fetchTodos();
     }, []);
@@ -146,7 +146,7 @@ const TodoList = () => {
                                 onChange={(e) => setText(e.target.value)}
                                 placeholder="New Task"
                             />
-
+                            
                             {/* Image Upload Input */}
                             <input
                                 type="file"
@@ -168,7 +168,11 @@ const TodoList = () => {
                             />
 
                             {imagePreview && (
-                                <img src={imagePreview} alt="Preview" className="mt-2 rounded w-full" />
+                                <img
+                                    src={imagePreview}
+                                    alt="Preview"
+                                    className="mt-2 rounded w-full h-48 object-cover"
+                                />
                             )}
                         </div>
 
@@ -195,18 +199,18 @@ const TodoList = () => {
                     <div key={todo._id} className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition">
                         <div className="flex flex-col">
                             <img
-                                src={todo.image || "https://via.placeholder.com/300x200.png?text=No+Image"}
+                                src={todo.image || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHURB9ii8O885EHuKuUJOLPmU270GbnAVHJQ&s"}
                                 alt="Todo"
-                                className="rounded mb-2"
+                                className="rounded mb-2 w-full h-48 object-cover"
                             />
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-col">
                                 <span
                                     onClick={() => toggleTodo(todo._id, todo.completed)}
                                     className={`cursor-pointer ${todo.completed ? 'line-through text-gray-400' : ''}`}
                                 >
                                     {todo.text}
                                 </span>
-                                <div className="flex space-x-2">
+                                <div className="flex justify-center gap-2 mt-2">
                                     <button
                                         className="text-yellow-500 hover:text-yellow-600"
                                         onClick={() => editTodo(todo._id, todo.text, todo.image)}
