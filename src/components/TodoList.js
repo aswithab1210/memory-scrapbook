@@ -13,7 +13,7 @@ const TodoList = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [editTodoId, setEditTodoId] = useState(null);
     const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true); // assume there are more at first
+    const [hasMore, setHasMore] = useState(true); // Assume there are more todos to fetch at first
 
     const fetchTodos = async (page = 1) => {
         setLoading(true);
@@ -22,10 +22,10 @@ const TodoList = () => {
             if (page === 1) {
                 setTodos(res.data);
             } else {
-                setTodos(prev => [...prev, ...res.data]);
+                setTodos((prev) => [...prev, ...res.data]);
             }
             if (res.data.length === 0) {
-                setHasMore(false);
+                setHasMore(false);  // No more todos to load
             }
         } catch (error) {
             console.error('Error fetching todos:', error);
@@ -218,19 +218,9 @@ const TodoList = () => {
                                 >
                                     {todo.text}
                                 </span>
-                                <div className="flex justify-center gap-2 mt-2">
-                                    <button
-                                        className="text-yellow-500 hover:text-yellow-600"
-                                        onClick={() => editTodo(todo._id, todo.text, todo.image)}
-                                    >
-                                        <FaEdit className="text-yellow-500" />
-                                    </button>
-                                    <button
-                                        className="text-red-500 hover:text-red-600"
-                                        onClick={() => deleteTodo(todo._id)}
-                                    >
-                                        <FaTrash className="text-red-500" />
-                                    </button>
+                                <div className="flex justify-between gap-2">
+                                    <FaEdit className="cursor-pointer text-blue-500" onClick={() => editTodo(todo._id, todo.text, todo.image)} />
+                                    <FaTrash className="cursor-pointer text-red-500" onClick={() => deleteTodo(todo._id)} />
                                 </div>
                             </div>
                         </div>
@@ -238,17 +228,27 @@ const TodoList = () => {
                 ))}
             </div>
 
-            {/* Load More Button */}
-            {hasMore && !loading && (
-                <div className="flex justify-center mt-4">
-                    <button
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                        onClick={() => setPage(prev => prev + 1)}
-                    >
-                        Load More
-                    </button>
-                </div>
-            )}
+            {/* Pagination */}
+            <div className="flex justify-center gap-4 mt-6">
+                <button
+                    className="bg-gray-300 px-4 py-2 rounded-md"
+                    disabled={page === 1}
+                    onClick={() => {
+                        setPage(prev => Math.max(prev - 1, 1));
+                    }}
+                >
+                    Previous
+                </button>
+                <button
+                    className="bg-gray-300 px-4 py-2 rounded-md"
+                    disabled={!hasMore}
+                    onClick={() => {
+                        setPage(prev => prev + 1);
+                    }}
+                >
+                    Next
+                </button>
+            </div>
         </div>
     );
 };

@@ -30,12 +30,12 @@ exports.handler = async function(event) {
         if (httpMethod === 'GET') {
             // Pagination support
             const page = parseInt(queryStringParameters?.page) || 1;
-            const limit = 50;  // safe limit for serverless functions
+            const limit = 20;  // safe limit for serverless functions to reduce the payload size
             const skip = (page - 1) * limit;
 
-            // Projection to avoid large image data being sent
+            // Projection to avoid sending unnecessary data (exclude image if too large)
             const todos = await collection
-                .find({}, { projection: { text: 1, completed: 1, image: 1 } }) // Include image field as well
+                .find({}, { projection: { text: 1, completed: 1, image: 1 } })
                 .skip(skip)
                 .limit(limit)
                 .toArray();
