@@ -13,7 +13,7 @@ const TodoList = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [editTodoId, setEditTodoId] = useState(null);
     const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true); // Assume there are more todos to fetch at first
+    const [hasMore, setHasMore] = useState(true);
 
     const fetchTodos = async (page = 1) => {
         setLoading(true);
@@ -25,7 +25,7 @@ const TodoList = () => {
                 setTodos((prev) => [...prev, ...res.data]);
             }
             if (res.data.length === 0) {
-                setHasMore(false);  // No more todos to load
+                setHasMore(false);
             }
         } catch (error) {
             console.error('Error fetching todos:', error);
@@ -61,12 +61,11 @@ const TodoList = () => {
 
             setText('');
             setImage(null);
-            setImagePreview(null);
-
+            setImagePreview(null); 
             setIsModalOpen(false);
             setIsEditMode(false);
             setEditTodoId(null);
-            setPage(1);    // Reset to page 1 on change
+            setPage(1);
             setHasMore(true);
             fetchTodos(1);
         } catch (error) {
@@ -80,9 +79,7 @@ const TodoList = () => {
     const toggleTodo = async (id, completed) => {
         setLoading(true);
         try {
-            await axios.put('/.netlify/functions/todos', { id, completed: !completed });
-            setPage(1);    // Reset to first page
-            setHasMore(true);
+            await axios.put('/.netlify/functions/todos', { id, completed: !completed }); 
             fetchTodos(1);
         } catch (error) {
             console.error('Error toggling todo:', error);
@@ -95,9 +92,7 @@ const TodoList = () => {
     const deleteTodo = async (id) => {
         setLoading(true);
         try {
-            await axios.delete(`/.netlify/functions/todos?id=${id}`);
-            setPage(1);    // Reset to first page
-            setHasMore(true);
+            await axios.delete(`/.netlify/functions/todos?id=${id}`); 
             fetchTodos(1);
         } catch (error) {
             console.error('Error deleting todo:', error);
@@ -156,13 +151,13 @@ const TodoList = () => {
                                 value={text}
                                 onChange={(e) => setText(e.target.value)}
                                 placeholder="New Task"
-                            /> 
+                            />
                             <input
                                 type="file"
                                 accept="image/*"
                                 className="border p-2"
                                 onChange={handleImageChange}
-                            /> 
+                            />
                             <input
                                 type="text"
                                 className="border p-2"
@@ -173,8 +168,7 @@ const TodoList = () => {
                                 }}
                                 value={image && !image.startsWith('data:') ? image : ''}
                             />
-                            
-                            {imagePreview && (
+                            {imagePreview && ( 
                                 <img
                                     src={imagePreview}
                                     alt="Preview"
