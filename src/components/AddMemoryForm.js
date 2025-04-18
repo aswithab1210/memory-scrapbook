@@ -22,7 +22,7 @@ const AddMemoryForm = ({ onSave, onClose, editMemoryId, memories }) => {
     }
   }, [editMemoryId, memories]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title || !category) {
       setError("Title and Category are required.");
@@ -31,21 +31,38 @@ const AddMemoryForm = ({ onSave, onClose, editMemoryId, memories }) => {
 
     const newMemory = { title, description, category, image };
 
-    // If editing, use PUT request logic, otherwise use POST for new memory
-    if (editMemoryId) {
-      newMemory.id = editMemoryId; // Include memory ID for updates
-      onSave("PUT", newMemory); // Send PUT request for editing
-    } else {
-      onSave("POST", newMemory); // Send POST request for new memory
-    }
+    try {
+      const method = editMemoryId ? "PUT" : "POST";
+      const url = editMemoryId
+        ? `/api/todos?id=${editMemoryId}` // If editing, include the memory ID
+        : "/api/todos"; // If creating, just use the endpoint
 
-    // Clear form and close modal
-    setTitle("");
-    setDescription("");
-    setCategory("");
-    setImage(null);
-    setError("");
-    onClose();
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newMemory),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error saving memory");
+      }
+
+      const result = await response.json();
+      console.log("Memory saved:", result);
+      
+      // Reset form and close modal
+      setTitle("");
+      setDescription("");
+      setCategory("");
+      setImage(null);
+      setError("");
+      onClose();
+    } catch (err) {
+      console.error("Error:", err);
+      setError("Something went wrong. Please try again.");
+    }
   };
 
   const handleImageUpload = (e) => {
