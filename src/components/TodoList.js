@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaTrash , FaEdit } from 'react-icons/fa'; // Import the red bin icon
+import { FaTrash } from 'react-icons/fa'; // Import the red bin icon
 
 const TodoList = () => {
     const [todos, setTodos] = useState([]);
@@ -13,7 +13,7 @@ const TodoList = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [editTodoId, setEditTodoId] = useState(null);
 
-
+    
     const fetchTodos = async () => {
         setLoading(true);
         try {
@@ -136,13 +136,13 @@ const TodoList = () => {
                                         className="text-yellow-500 hover:text-yellow-600"
                                         onClick={() => editTodo(todo._id, todo.text, todo.image)}
                                     >
-                                        <FaEdit className="text-yellow-500" />
+                                        Edit
                                     </button>
                                     <button
                                         className="text-red-500 hover:text-red-600"
                                         onClick={() => deleteTodo(todo._id)}
                                     >
-                                        <FaTrash className="text-red-500" />
+                                        <FaTrash className="text-red-500" /> {/* Red bin icon */}
                                     </button>
                                 </div>
                             </div>
@@ -151,10 +151,10 @@ const TodoList = () => {
                 ))}
             </div>
 
-            {/* Fixed Add New Todo Button */}
-            <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full sm:w-auto sm:left-auto sm:right-6">
+            {/* Add New Todo Button */}
+            <div className="add-todo-button-container">
                 <button
-                    className="bg-blue-500 text-white px-4 py-2 rounded-full shadow-md hover:bg-blue-600 transition"
+                    className="add-todo-btn bg-blue-500 text-white p-4 rounded-full hover:bg-blue-600 transition"
                     onClick={() => {
                         setText('');
                         setImage(null);
@@ -163,11 +163,11 @@ const TodoList = () => {
                         setIsModalOpen(true);
                     }}
                 >
-                    Add New Todo
+                    <span className="text-3xl">+</span>
                 </button>
             </div>
 
-    
+            {/* Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-80">
@@ -180,7 +180,7 @@ const TodoList = () => {
                                 onChange={(e) => setText(e.target.value)}
                                 placeholder="New Task"
                             />
-    
+
                             {/* Image Upload Input */}
                             <input
                                 type="file"
@@ -227,7 +227,7 @@ const TodoList = () => {
                     </div>
                 </div>
             )}
-    
+
         </div>
     );
 };

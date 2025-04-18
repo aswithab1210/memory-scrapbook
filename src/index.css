@@ -16,3 +16,29 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.add-todo-button-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* For larger screens */
+.add-todo-btn {
+  position: static;
+}
+
+/* For smaller screens */
+@media (max-width: 640px) {
+  .add-todo-button-container {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+  }
+
+  .add-todo-btn {
+      position: absolute;
+  }
+}
