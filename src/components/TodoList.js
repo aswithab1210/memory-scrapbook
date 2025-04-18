@@ -7,6 +7,8 @@ const TodoList = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
+    const [isEditMode, setIsEditMode] = useState(false); // Check if it's in edit mode
+    const [editTodoId, setEditTodoId] = useState(null); // Store the ID of the todo being edited
 
     // Fetch todos from the backend
     const fetchTodos = async () => {
@@ -22,18 +24,26 @@ const TodoList = () => {
         }
     };
 
-    // Add a new todo
-    const addTodo = async () => {
+    // Add or update a todo
+    const saveTodo = async () => {
         if (!text.trim()) return;
         setLoading(true);
         try {
-            await axios.post('/.netlify/functions/todos', { text });
+            if (isEditMode) {
+                // Update an existing todo
+                await axios.put('/.netlify/functions/todos', { id: editTodoId, text });
+            } else {
+                // Add a new todo
+                await axios.post('/.netlify/functions/todos', { text });
+            }
             setText('');
             fetchTodos();
-            setIsModalOpen(false); // Close the modal after adding
+            setIsModalOpen(false); // Close the modal after saving
+            setIsEditMode(false); // Reset edit mode
+            setEditTodoId(null); // Reset edit todo ID
         } catch (error) {
-            console.error('Error adding todo:', error);
-            setError('An error occurred while adding the todo.');
+            console.error('Error saving todo:', error);
+            setError('An error occurred while saving the todo.');
         } finally {
             setLoading(false);
         }
@@ -67,6 +77,14 @@ const TodoList = () => {
         }
     };
 
+    // Open the modal in edit mode
+    const editTodo = (id, currentText) => {
+        setIsEditMode(true);
+        setEditTodoId(id);
+        setText(currentText);
+        setIsModalOpen(true);
+    };
+
     // UseEffect to fetch todos when component mounts
     useEffect(() => {
         fetchTodos();
@@ -94,7 +112,7 @@ const TodoList = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-80">
-                        <h2 className="text-xl mb-4">Add a New Todo</h2>
+                        <h2 className="text-xl mb-4">{isEditMode ? 'Edit Todo' : 'Add a New Todo'}</h2>
                         <div className="flex mb-2">
                             <input
                                 className="border p-2 flex-grow"
@@ -106,9 +124,9 @@ const TodoList = () => {
                         <div className="flex justify-end gap-2">
                             <button
                                 className="bg-blue-500 text-white px-4 py-2"
-                                onClick={addTodo}
+                                onClick={saveTodo}
                             >
-                                Add
+                                {isEditMode ? 'Save Changes' : 'Add'}
                             </button>
                             <button
                                 className="bg-gray-300 text-gray-700 px-4 py-2"
@@ -132,7 +150,20 @@ const TodoList = () => {
                             >
                                 {todo.text}
                             </span>
-                            <button className="text-red-500" onClick={() => deleteTodo(todo._id)}>X</button>
+                            <div className="flex space-x-2">
+                                <button
+                                    className="text-yellow-500"
+                                    onClick={() => editTodo(todo._id, todo.text)} // Edit button
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    className="text-red-500"
+                                    onClick={() => deleteTodo(todo._id)} // Delete button
+                                >
+                                    X
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}
