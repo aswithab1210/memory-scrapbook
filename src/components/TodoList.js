@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { FaTrash } from 'react-icons/fa'; // Import the red bin icon
 
 const TodoList = () => {
     const [todos, setTodos] = useState([]);
@@ -65,8 +66,7 @@ const TodoList = () => {
         }
     };
 
-
-
+    
     const toggleTodo = async (id, completed) => {
         setLoading(true);
         try {
@@ -104,7 +104,7 @@ const TodoList = () => {
     };
 
 
-
+    
     useEffect(() => {
         fetchTodos();
     }, []);
@@ -131,9 +131,7 @@ const TodoList = () => {
                 </button>
             </div>
 
-
-
-
+    
             {isModalOpen && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-80">
@@ -146,7 +144,7 @@ const TodoList = () => {
                                 onChange={(e) => setText(e.target.value)}
                                 placeholder="New Task"
                             />
-                            
+    
                             {/* Image Upload Input */}
                             <input
                                 type="file"
@@ -221,7 +219,7 @@ const TodoList = () => {
                                         className="text-red-500 hover:text-red-600"
                                         onClick={() => deleteTodo(todo._id)}
                                     >
-                                        X
+                                        <FaTrash className="text-red-500" /> {/* Red bin icon */}
                                     </button>
                                 </div>
                             </div>
