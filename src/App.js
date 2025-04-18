@@ -4,8 +4,8 @@ import MemoryCard from "./components/MemoryCard";
 import AddMemoryForm from "./components/AddMemoryForm";
 import axios from "axios";
 import Papa from "papaparse";
-import Sidebar from "./components/sidebar";
 import TopNav from "./components/TopNav";
+import Sidebar from "./components/Sidebar";
 
 const App = () => {
   const [memories, setMemories] = useState([]);
