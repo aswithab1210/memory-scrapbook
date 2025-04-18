@@ -73,7 +73,6 @@ exports.handler = async function(event) {
     } catch (err) {
         console.error('Error:', err);
         return { statusCode: 500, body: 'Internal Server Error: ' + err.message };
-    } finally {
-        await client.close();
+        
     }
 };
