@@ -4,34 +4,82 @@ import axios from 'axios';
 const TodoList = () => {
     const [todos, setTodos] = useState([]);
     const [text, setText] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
+    // Fetch todos from the backend
     const fetchTodos = async () => {
-        const res = await axios.get('/.netlify/functions/todos');
-        setTodos(res.data);
+        setLoading(true);
+        try {
+            const res = await axios.get('/.netlify/functions/todos');
+            setTodos(res.data);
+        } catch (error) {
+            console.error('Error fetching todos:', error);
+            setError('An error occurred while fetching todos.');
+        } finally {
+            setLoading(false);
+        }
     };
 
+    // Add a new todo
     const addTodo = async () => {
         if (!text.trim()) return;
-        await axios.post('/.netlify/functions/todos', { text });
-        setText('');
-        fetchTodos();
+        setLoading(true);
+        try {
+            await axios.post('/.netlify/functions/todos', { text });
+            setText('');
+            fetchTodos();
+        } catch (error) {
+            console.error('Error adding todo:', error);
+            setError('An error occurred while adding the todo.');
+        } finally {
+            setLoading(false);
+        }
     };
 
+    // Toggle todo completion status
     const toggleTodo = async (id, completed) => {
-        await axios.put('/.netlify/functions/todos', { id, completed: !completed });
-        fetchTodos();
+        setLoading(true);
+        try {
+            await axios.put('/.netlify/functions/todos', { id, completed: !completed });
+            fetchTodos();
+        } catch (error) {
+            console.error('Error toggling todo:', error);
+            setError('An error occurred while toggling the todo.');
+        } finally {
+            setLoading(false);
+        }
     };
 
+    // Delete a todo
     const deleteTodo = async (id) => {
-        await axios.delete(`/.netlify/functions/todos?id=${id}`);
-        fetchTodos();
+        setLoading(true);
+        try {
+            await axios.delete(`/.netlify/functions/todos?id=${id}`);
+            fetchTodos();
+        } catch (error) {
+            console.error('Error deleting todo:', error);
+            setError('An error occurred while deleting the todo.');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    useEffect(() => { fetchTodos(); }, []);
+    // UseEffect to fetch todos when component mounts
+    useEffect(() => {
+        fetchTodos();
+    }, []);
 
     return (
         <div className="p-4 max-w-md mx-auto">
             <h1 className="text-2xl mb-4">My To-Do List</h1>
+            
+            {/* Display loading state */}
+            {loading && <p>Loading...</p>}
+            
+            {/* Display error if there's one */}
+            {error && <p className="text-red-500">{error}</p>}
+
             <div className="flex mb-2">
                 <input
                     className="border p-2 flex-grow"
@@ -41,6 +89,8 @@ const TodoList = () => {
                 />
                 <button className="bg-blue-500 text-white px-4" onClick={addTodo}>Add</button>
             </div>
+            
+            {/* Render todo list */}
             <ul>
                 {todos.map(todo => (
                     <li key={todo._id} className="flex justify-between items-center mb-2">
