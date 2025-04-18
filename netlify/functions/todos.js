@@ -10,7 +10,7 @@ async function connectToDatabase() {
     try {
         console.log("Connecting to MongoDB...");
         await client.connect();
-        cachedDb = client.db('todo_app');
+        cachedDb = client.db('todo_app');  // Assuming 'todo_app' is your MongoDB database name
         console.log("Connected to MongoDB");
         return cachedDb;
     } catch (err) {
@@ -22,7 +22,7 @@ async function connectToDatabase() {
 exports.handler = async function(event) {
     const { httpMethod, body, queryStringParameters } = event;
     const db = await connectToDatabase();
-    const collection = db.collection('todos');
+    const collection = db.collection('todos');  // 'todos' is the collection name
 
     console.log('Received HTTP method:', httpMethod);
 
@@ -33,9 +33,9 @@ exports.handler = async function(event) {
             const limit = 50;  // safe limit for serverless functions
             const skip = (page - 1) * limit;
 
-            // Projection to avoid large image data
+            // Projection to avoid large image data being sent
             const todos = await collection
-                .find({}, { projection: { text: 1, completed: 1 } })
+                .find({}, { projection: { text: 1, completed: 1, image: 1 } }) // Include image field as well
                 .skip(skip)
                 .limit(limit)
                 .toArray();
@@ -52,8 +52,8 @@ exports.handler = async function(event) {
             console.log('Inserting new todo:', { text, image });
             const result = await collection.insertOne({
                 text,
-                image: image || null,
-                completed: false
+                image: image || null,  // image can be null if not provided
+                completed: false,
             });
             return {
                 statusCode: 200,

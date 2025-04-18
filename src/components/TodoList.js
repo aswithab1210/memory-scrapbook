@@ -61,7 +61,7 @@ const TodoList = () => {
 
             setText('');
             setImage(null);
-            setImagePreview(null); 
+            setImagePreview(null);
 
             setIsModalOpen(false);
             setIsEditMode(false);
