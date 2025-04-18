@@ -13,7 +13,7 @@ const TodoList = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [editTodoId, setEditTodoId] = useState(null);
     const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
+    const [hasMore, setHasMore] = useState(true); // Assume there are more todos to fetch at first
 
     const fetchTodos = async (page = 1) => {
         setLoading(true);
@@ -25,7 +25,7 @@ const TodoList = () => {
                 setTodos((prev) => [...prev, ...res.data]);
             }
             if (res.data.length === 0) {
-                setHasMore(false);
+                setHasMore(false);  // No more todos to load
             }
         } catch (error) {
             console.error('Error fetching todos:', error);
@@ -47,11 +47,31 @@ const TodoList = () => {
         }
     };
 
+    const uploadImageToS3 = async (file) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Assuming you have a backend function for uploading to S3
+            const response = await axios.post('/.netlify/functions/upload-s3', formData);
+            return response.data.imageUrl;
+        } catch (error) {
+            console.error('Error uploading image to S3:', error);
+            throw new Error('Image upload failed');
+        }
+    };
+
     const saveTodo = async () => {
         if (!text.trim()) return;
+
         setLoading(true);
         try {
-            const todoData = { text, image };
+            let uploadedImageUrl = null;
+            if (image && typeof image !== 'string') {
+                uploadedImageUrl = await uploadImageToS3(image); // Upload to S3 if an image is provided
+            }
+
+            const todoData = { text, image: uploadedImageUrl || image };
 
             if (isEditMode) {
                 await axios.put('/.netlify/functions/todos', { id: editTodoId, ...todoData, completed: false });
@@ -61,11 +81,12 @@ const TodoList = () => {
 
             setText('');
             setImage(null);
-            setImagePreview(null); 
+            setImagePreview(null);
+
             setIsModalOpen(false);
             setIsEditMode(false);
             setEditTodoId(null);
-            setPage(1);
+            setPage(1);    // Reset to page 1 on change
             setHasMore(true);
             fetchTodos(1);
         } catch (error) {
@@ -79,7 +100,9 @@ const TodoList = () => {
     const toggleTodo = async (id, completed) => {
         setLoading(true);
         try {
-            await axios.put('/.netlify/functions/todos', { id, completed: !completed }); 
+            await axios.put('/.netlify/functions/todos', { id, completed: !completed });
+            setPage(1);    // Reset to first page
+            setHasMore(true);
             fetchTodos(1);
         } catch (error) {
             console.error('Error toggling todo:', error);
@@ -92,7 +115,9 @@ const TodoList = () => {
     const deleteTodo = async (id) => {
         setLoading(true);
         try {
-            await axios.delete(`/.netlify/functions/todos?id=${id}`); 
+            await axios.delete(`/.netlify/functions/todos?id=${id}`);
+            setPage(1);    // Reset to first page
+            setHasMore(true);
             fetchTodos(1);
         } catch (error) {
             console.error('Error deleting todo:', error);
@@ -151,13 +176,13 @@ const TodoList = () => {
                                 value={text}
                                 onChange={(e) => setText(e.target.value)}
                                 placeholder="New Task"
-                            />
+                            /> 
                             <input
                                 type="file"
                                 accept="image/*"
                                 className="border p-2"
                                 onChange={handleImageChange}
-                            />
+                            /> 
                             <input
                                 type="text"
                                 className="border p-2"
@@ -168,7 +193,8 @@ const TodoList = () => {
                                 }}
                                 value={image && !image.startsWith('data:') ? image : ''}
                             />
-                            {imagePreview && ( 
+                            
+                            {imagePreview && (
                                 <img
                                     src={imagePreview}
                                     alt="Preview"

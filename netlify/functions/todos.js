@@ -36,6 +36,7 @@ exports.handler = async (event) => {
     const limit = parseInt(queryStringParameters?.limit || 20);
     const skip = (page - 1) * limit;
 
+    // Handle GET request to fetch todos
     if (httpMethod === 'GET') {
         try {
             const todos = await collection
@@ -57,6 +58,7 @@ exports.handler = async (event) => {
         }
     }
 
+    // Handle POST request to add a new todo
     if (httpMethod === 'POST') {
         try {
             const { text, image } = JSON.parse(body);
@@ -84,6 +86,7 @@ exports.handler = async (event) => {
         }
     }
 
+    // Handle PUT request to update a todo
     if (httpMethod === 'PUT') {
         try {
             const { id, text, completed, image } = JSON.parse(body);
@@ -115,6 +118,7 @@ exports.handler = async (event) => {
         }
     }
 
+    // Handle DELETE request to remove a todo
     if (httpMethod === 'DELETE') {
         try {
             const { id } = JSON.parse(body);
