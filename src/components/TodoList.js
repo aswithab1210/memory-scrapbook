@@ -13,7 +13,7 @@ const TodoList = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [editTodoId, setEditTodoId] = useState(null);
     const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true); // assume there are more at first
+    const [hasMore, setHasMore] = useState(true);
 
     const fetchTodos = async (page = 1) => {
         setLoading(true);
@@ -27,13 +27,16 @@ const TodoList = () => {
             if (res.data.length === 0) {
                 setHasMore(false);
             }
-        } catch (error) {
-            console.error('Error fetching todos:', error);
-            setError('An error occurred while fetching todos.');
+        } catch (err) {
+            setError('Failed to fetch todos');
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchTodos(page);
+    }, [page]);
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -61,32 +64,15 @@ const TodoList = () => {
 
             setText('');
             setImage(null);
-            setImagePreview(null); 
-
+            setImagePreview(null);
             setIsModalOpen(false);
             setIsEditMode(false);
             setEditTodoId(null);
-            setPage(1);    // Reset to page 1 on change
+            setPage(1);
             setHasMore(true);
             fetchTodos(1);
-        } catch (error) {
-            console.error('Error saving todo:', error);
-            setError('An error occurred while saving the todo.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const toggleTodo = async (id, completed) => {
-        setLoading(true);
-        try {
-            await axios.put('/.netlify/functions/todos', { id, completed: !completed });
-            setPage(1);    // Reset to first page
-            setHasMore(true);
-            fetchTodos(1);
-        } catch (error) {
-            console.error('Error toggling todo:', error);
-            setError('An error occurred while toggling the todo.');
+        } catch (err) {
+            setError('Error saving todo');
         } finally {
             setLoading(false);
         }
@@ -96,41 +82,48 @@ const TodoList = () => {
         setLoading(true);
         try {
             await axios.delete(`/.netlify/functions/todos?id=${id}`);
-            setPage(1);    // Reset to first page
+            setPage(1);
             setHasMore(true);
             fetchTodos(1);
-        } catch (error) {
-            console.error('Error deleting todo:', error);
-            setError('An error occurred while deleting the todo.');
+        } catch (err) {
+            setError('Error deleting todo');
         } finally {
             setLoading(false);
         }
     };
 
-    const editTodo = (id, currentText, currentImage) => {
+    const toggleTodo = async (id, completed) => {
+        setLoading(true);
+        try {
+            await axios.put('/.netlify/functions/todos', { id, completed: !completed });
+            fetchTodos(1);
+            setPage(1);
+            setHasMore(true);
+        } catch (err) {
+            setError('Error toggling todo');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const editTodo = (id, text, image) => {
         setIsEditMode(true);
         setEditTodoId(id);
-        setText(currentText);
-        setImage(currentImage);
-        setImagePreview(currentImage);
+        setText(text);
+        setImage(image);
+        setImagePreview(image);
         setIsModalOpen(true);
     };
 
-    useEffect(() => {
-        fetchTodos(page);
-    }, [page]);
-
     return (
         <div className="p-4 max-w-6xl mx-auto">
-            <h1 className="text-2xl mb-4 font-bold text-center">My To-Do List</h1>
+            <h1 className="text-2xl font-bold text-center mb-6">My To-Do List</h1>
 
             {loading && <p className="text-center">Loading...</p>}
             {error && <p className="text-red-500 text-center">{error}</p>}
 
-            {/* Add New Todo Button */}
-            <div className="fixed bottom-4 right-4 sm:relative sm:bottom-auto sm:right-auto sm:mb-6 sm:flex sm:justify-center">
+            <div className="fixed bottom-4 right-4 sm:static sm:mb-6 sm:flex sm:justify-center">
                 <button
-                    className="bg-blue-500 text-white p-4 rounded-full hover:bg-blue-600 transition sm:px-4 sm:py-2 sm:rounded sm:bg-blue-500"
                     onClick={() => {
                         setText('');
                         setImage(null);
@@ -138,62 +131,47 @@ const TodoList = () => {
                         setIsEditMode(false);
                         setIsModalOpen(true);
                     }}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600 transition"
                 >
-                    <FaPlus className="sm:hidden text-2xl" />
-                    <span className="hidden sm:block">Add New Memory</span>
+                    <FaPlus className="inline mr-2" />
+                    Add New Memory
                 </button>
             </div>
 
-            {/* Modal for Adding/Editing Todo */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-80">
-                        <h2 className="text-xl mb-4">{isEditMode ? 'Edit The Memory' : 'Add a New Memory'}</h2>
-
-                        <div className="flex flex-col gap-2 mb-2">
-                            <input
-                                className="border p-2"
-                                value={text}
-                                onChange={(e) => setText(e.target.value)}
-                                placeholder="New Task"
-                            /> 
-                            <input
-                                type="file"
-                                accept="image/*"
-                                className="border p-2"
-                                onChange={handleImageChange}
-                            /> 
-                            <input
-                                type="text"
-                                className="border p-2"
-                                placeholder="or paste Image URL"
-                                onChange={(e) => {
-                                    setImage(e.target.value);
-                                    setImagePreview(e.target.value);
-                                }}
-                                value={image && !image.startsWith('data:') ? image : ''}
-                            />
-                            
-                            {imagePreview && (
-                                <img
-                                    src={imagePreview}
-                                    alt="Preview"
-                                    className="mt-2 rounded w-full h-48 object-cover"
-                                />
-                            )}
-                        </div>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded shadow-lg w-80">
+                        <h2 className="text-xl mb-4">{isEditMode ? 'Edit Memory' : 'Add Memory'}</h2>
+                        <input
+                            type="text"
+                            placeholder="Memory text"
+                            className="border p-2 mb-2 w-full"
+                            value={text}
+                            onChange={(e) => setText(e.target.value)}
+                        />
+                        <input
+                            type="file"
+                            accept="image/*"
+                            className="border p-2 mb-2 w-full"
+                            onChange={handleImageChange}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Paste image URL"
+                            className="border p-2 mb-2 w-full"
+                            value={image && !image.startsWith('data:') ? image : ''}
+                            onChange={(e) => {
+                                setImage(e.target.value);
+                                setImagePreview(e.target.value);
+                            }}
+                        />
+                        {imagePreview && <img src={imagePreview} alt="Preview" className="rounded mb-2 h-40 w-full object-cover" />}
 
                         <div className="flex justify-end gap-2">
-                            <button
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                                onClick={saveTodo}
-                            >
-                                {isEditMode ? 'Save Changes' : 'Add'}
+                            <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={saveTodo}>
+                                {isEditMode ? 'Update' : 'Add'}
                             </button>
-                            <button
-                                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
-                                onClick={() => setIsModalOpen(false)}
-                            >
+                            <button className="bg-gray-300 text-black px-4 py-2 rounded" onClick={() => setIsModalOpen(false)}>
                                 Cancel
                             </button>
                         </div>
@@ -201,49 +179,37 @@ const TodoList = () => {
                 </div>
             )}
 
-            {/* Todo List Display */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
                 {todos.map(todo => (
-                    <div key={todo._id} className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition">
-                        <div className="flex flex-col">
-                            <img
-                                src={todo.image || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHURB9ii8O885EHuKuUJOLPmU270GbnAVHJQ&s"}
-                                alt="Todo"
-                                className="rounded mb-2 w-full h-48 object-cover"
-                            />
-                            <div className="flex flex-col">
-                                <span
-                                    onClick={() => toggleTodo(todo._id, todo.completed)}
-                                    className={`cursor-pointer ${todo.completed ? 'line-through text-gray-400' : ''}`}
-                                >
-                                    {todo.text}
-                                </span>
-                                <div className="flex justify-center gap-2 mt-2">
-                                    <button
-                                        className="text-yellow-500 hover:text-yellow-600"
-                                        onClick={() => editTodo(todo._id, todo.text, todo.image)}
-                                    >
-                                        <FaEdit className="text-yellow-500" />
-                                    </button>
-                                    <button
-                                        className="text-red-500 hover:text-red-600"
-                                        onClick={() => deleteTodo(todo._id)}
-                                    >
-                                        <FaTrash className="text-red-500" />
-                                    </button>
-                                </div>
-                            </div>
+                    <div key={todo._id} className="bg-white p-4 rounded shadow hover:shadow-lg">
+                        <img
+                            src={todo.image || 'https://via.placeholder.com/300x200.png?text=No+Image'}
+                            className="rounded mb-3 h-48 w-full object-cover"
+                            alt="Todo"
+                        />
+                        <p
+                            onClick={() => toggleTodo(todo._id, todo.completed)}
+                            className={`cursor-pointer mb-2 ${todo.completed ? 'line-through text-gray-400' : ''}`}
+                        >
+                            {todo.text}
+                        </p>
+                        <div className="flex justify-center gap-4">
+                            <button onClick={() => editTodo(todo._id, todo.text, todo.image)}>
+                                <FaEdit className="text-yellow-500" />
+                            </button>
+                            <button onClick={() => deleteTodo(todo._id)}>
+                                <FaTrash className="text-red-500" />
+                            </button>
                         </div>
                     </div>
                 ))}
             </div>
 
-            {/* Load More Button */}
             {hasMore && !loading && (
-                <div className="flex justify-center mt-4">
+                <div className="flex justify-center mt-6">
                     <button
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                         onClick={() => setPage(prev => prev + 1)}
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                     >
                         Load More
                     </button>
