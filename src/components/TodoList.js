@@ -73,10 +73,10 @@ const TodoList = () => {
     return (
         <div className="p-4 max-w-md mx-auto">
             <h1 className="text-2xl mb-4">My To-Do List</h1>
-            
+
             {/* Display loading state */}
             {loading && <p>Loading...</p>}
-            
+
             {/* Display error if there's one */}
             {error && <p className="text-red-500">{error}</p>}
 
@@ -89,21 +89,23 @@ const TodoList = () => {
                 />
                 <button className="bg-blue-500 text-white px-4" onClick={addTodo}>Add</button>
             </div>
-            
+
             {/* Render todo list */}
-            <ul>
+            <div className="grid grid-cols-1 gap-4">
                 {todos.map(todo => (
-                    <li key={todo._id} className="flex justify-between items-center mb-2">
-                        <span
-                            onClick={() => toggleTodo(todo._id, todo.completed)}
-                            className={`cursor-pointer ${todo.completed ? 'line-through text-gray-400' : ''}`}
-                        >
-                            {todo.text}
-                        </span>
-                        <button className="text-red-500" onClick={() => deleteTodo(todo._id)}>X</button>
-                    </li>
+                    <div key={todo._id} className="bg-white p-4 rounded-lg shadow-md">
+                        <div className="flex justify-between items-center">
+                            <span
+                                onClick={() => toggleTodo(todo._id, todo.completed)}
+                                className={`cursor-pointer ${todo.completed ? 'line-through text-gray-400' : ''}`}
+                            >
+                                {todo.text}
+                            </span>
+                            <button className="text-red-500" onClick={() => deleteTodo(todo._id)}>X</button>
+                        </div>
+                    </div>
                 ))}
-            </ul>
+            </div>
         </div>
     );
 };
