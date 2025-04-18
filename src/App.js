@@ -8,7 +8,7 @@ function App() {
       <div>
         <TopNav/>
       </div>
-      <div>
+      <div class="p-3">
         <TodoList />
       </div>
     </div>
