@@ -13,7 +13,7 @@ const App = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [editMemoryId, setEditMemoryId] = useState(null);
 
-  const apiBase = "/.netlify/functions/todos.js";  // Adjusted to match your backend
+  const apiBase = "/.netlify/functions/todos";  // Adjusted to match your backend
 
   // Fetch all memories
   useEffect(() => {
@@ -91,7 +91,7 @@ const App = () => {
   return (
     <div className="flex flex-col h-screen">
       {/* Top Nav */}
-      <TopNav/>
+      <TopNav />
 
       {/* Layout */}
       <div className="flex flex-1 pt-16 pb-16 sm:pb-0">
@@ -128,7 +128,7 @@ const App = () => {
           )}
         </div>
       </div>
-
+      
     </div>
   );
 };

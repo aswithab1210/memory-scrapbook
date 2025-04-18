@@ -8,13 +8,13 @@ let cachedDb = null;
 async function connectToDatabase() {
     if (cachedDb) return cachedDb;
     try {
-        console.log("Connecting to MongoDB..."); // Add a log for connection attempt
+        console.log("Connecting to MongoDB...");
         await client.connect();
-        cachedDb = client.db('todo_app');  // The database name
-        console.log("Connected to MongoDB");  // Success log
+        cachedDb = client.db('memory_scrapbook');  // Database name
+        console.log("Connected to MongoDB");
         return cachedDb;
     } catch (err) {
-        console.error('Error connecting to MongoDB:', err); // Improved error logging
+        console.error('Error connecting to MongoDB:', err);
         throw err;
     }
 }
@@ -22,24 +22,36 @@ async function connectToDatabase() {
 exports.handler = async function(event) {
     const { httpMethod, body, queryStringParameters } = event;
     const db = await connectToDatabase();
-    const collection = db.collection('todos');
-    
-    console.log('Received HTTP method:', httpMethod);  // Log the HTTP method
+    const collection = db.collection('memories');  // Collection name
+
+    console.log('Received HTTP method:', httpMethod);
 
     try {
         if (httpMethod === 'GET') {
-            const todos = await collection.find({}).toArray();
-            console.log('Fetched todos:', todos); // Log the todos fetched
+            const memories = await collection.find({}).toArray();
             return {
                 statusCode: 200,
-                body: JSON.stringify(todos),
+                body: JSON.stringify(memories),
             };
         }
 
         if (httpMethod === 'POST') {
-            const { text } = JSON.parse(body);
-            console.log('Inserting new todo:', text);  // Log the text being inserted
-            const result = await collection.insertOne({ text, completed: false });
+            const { title, description, category, image } = JSON.parse(body);
+
+            // Basic validation
+            if (!title || !category) {
+                return { statusCode: 400, body: 'Title and Category are required.' };
+            }
+
+            const result = await collection.insertOne({
+                title,
+                description: description || '',
+                category,
+                image: image || '',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+
             return {
                 statusCode: 200,
                 body: JSON.stringify(result),
@@ -47,21 +59,29 @@ exports.handler = async function(event) {
         }
 
         if (httpMethod === 'PUT') {
-            const { id, completed } = JSON.parse(body);
-            console.log('Updating todo with ID:', id, 'Completed:', completed); // Log update details
+            const { id, title, description, category, image } = JSON.parse(body);
+
             if (!ObjectId.isValid(id)) {
                 return { statusCode: 400, body: 'Invalid ID format' };
             }
+
+            const updateData = { updatedAt: new Date() };
+            if (title !== undefined) updateData.title = title;
+            if (description !== undefined) updateData.description = description;
+            if (category !== undefined) updateData.category = category;
+            if (image !== undefined) updateData.image = image;
+
             await collection.updateOne(
                 { _id: new ObjectId(id) },
-                { $set: { completed } }
+                { $set: updateData }
             );
+
             return { statusCode: 200, body: 'Updated' };
         }
 
         if (httpMethod === 'DELETE') {
             const { id } = queryStringParameters;
-            console.log('Deleting todo with ID:', id); // Log delete action
+
             if (!ObjectId.isValid(id)) {
                 return { statusCode: 400, body: 'Invalid ID format' };
             }
@@ -70,9 +90,10 @@ exports.handler = async function(event) {
         }
 
         return { statusCode: 405, body: 'Method Not Allowed' };
+
     } catch (err) {
         console.error('Error:', err);
         return { statusCode: 500, body: 'Internal Server Error: ' + err.message };
-        
+
     }
 };

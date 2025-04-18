@@ -31,28 +31,14 @@ const AddMemoryForm = ({ onSave, onClose, editMemoryId, memories }) => {
 
     const newMemory = { title, description, category, image };
 
+    // If editing, use PUT request logic, otherwise use POST for new memory
     try {
-      const method = editMemoryId ? "PUT" : "POST";
-      const url = editMemoryId
-        ? `/api/todos?id=${editMemoryId}` // If editing, include the memory ID
-        : "/api/todos"; // If creating, just use the endpoint
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newMemory),
-      });
-
-      if (!response.ok) {
-        throw new Error("Error saving memory");
+      if (editMemoryId) {
+        await handleEditMemory(newMemory);
+      } else {
+        await handleAddMemory(newMemory);
       }
-
-      const result = await response.json();
-      console.log("Memory saved:", result);
-      
-      // Reset form and close modal
+      // Clear form and close modal
       setTitle("");
       setDescription("");
       setCategory("");
@@ -60,8 +46,42 @@ const AddMemoryForm = ({ onSave, onClose, editMemoryId, memories }) => {
       setError("");
       onClose();
     } catch (err) {
-      console.error("Error:", err);
       setError("Something went wrong. Please try again.");
+    }
+  };
+
+  // Handle add memory API call
+  const handleAddMemory = async (memory) => {
+    const response = await fetch("/.netlify/functions/todos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(memory),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to add memory");
+    }
+  };
+
+  // Handle edit memory API call
+  const handleEditMemory = async (memory) => {
+    const response = await fetch("/.netlify/functions/todos", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: editMemoryId,
+        ...memory,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to update memory");
     }
   };
 
@@ -83,17 +103,12 @@ const AddMemoryForm = ({ onSave, onClose, editMemoryId, memories }) => {
           {editMemoryId ? "Edit Memory" : "Add Memory"}
         </h2>
         {error && (
-          <div className="bg-red-500 text-white p-2 rounded-md mb-4">
-            {error}
-          </div>
+          <div className="bg-red-500 text-white p-2 rounded-md mb-4">{error}</div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
               Title
             </label>
             <input
@@ -107,10 +122,7 @@ const AddMemoryForm = ({ onSave, onClose, editMemoryId, memories }) => {
           </div>
 
           <div>
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
               Description
             </label>
             <textarea
@@ -122,10 +134,7 @@ const AddMemoryForm = ({ onSave, onClose, editMemoryId, memories }) => {
           </div>
 
           <div>
-            <label
-              htmlFor="category"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700">
               Category
             </label>
             <select
@@ -145,10 +154,7 @@ const AddMemoryForm = ({ onSave, onClose, editMemoryId, memories }) => {
           </div>
 
           <div>
-            <label
-              htmlFor="image"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="image" className="block text-sm font-medium text-gray-700">
               Image
             </label>
             <input
@@ -158,13 +164,7 @@ const AddMemoryForm = ({ onSave, onClose, editMemoryId, memories }) => {
               onChange={handleImageUpload}
             />
             {/* Display the image preview if there's an uploaded image */}
-            {image && (
-              <img
-                src={image}
-                alt="Preview"
-                className="mt-2 w-full h-48 object-cover"
-              />
-            )}
+            {image && <img src={image} alt="Preview" className="mt-2 w-full h-48 object-cover" />}
           </div>
 
           <div className="flex justify-between items-center mt-6">

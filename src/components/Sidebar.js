@@ -1,33 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Papa from "papaparse";
 import { FaPlus, FaList, FaFileExport } from "react-icons/fa";
 
 const Sidebar = ({ onCategoryChange, setIsModalOpen }) => {
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+  const [todos, setTodos] = useState([]); // Storing fetched todos
   const categories = ["All Categories", "Family", "Work", "Vacation"];
 
   const listItemClass =
     "py-2 px-4 text-white cursor-pointer hover:bg-blue-600 rounded-md flex items-center gap-2";
 
+  // Fetch todos when component mounts
+  useEffect(() => {
+    const fetchTodos = async () => {
+      try {
+        const response = await fetch("/.netlify/functions/todos"); // Adjust URL if necessary
+        if (!response.ok) {
+          throw new Error(`Error fetching todos: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setTodos(data);
+      } catch (error) {
+        console.error("Error fetching todos:", error);
+      }
+    };
+
+    fetchTodos();
+  }, []);
+
   const handleExport = async () => {
     try {
-      const response = await fetch("/.netlify/functions/todoHandler");  // Replace with your deployed Netlify function URL if needed
-      if (!response.ok) {
-        throw new Error(`Error fetching todos: ${response.statusText}`);
-      }
-
-      const todos = await response.json();
-
+      // Assuming we're working with todos data already fetched
       if (!Array.isArray(todos) || todos.length === 0) {
         alert("No data to export.");
         return;
       }
 
       const csv = Papa.unparse(
-        todos.map(({ _id, text, completed }) => ({
+        todos.map(({ _id, title, category, description }) => ({
           ID: _id,
-          Task: text,
-          Completed: completed
+          Title: title,
+          Category: category,
+          Description: description
         }))
       );
 
@@ -39,6 +53,30 @@ const Sidebar = ({ onCategoryChange, setIsModalOpen }) => {
     } catch (error) {
       console.error("Export failed:", error);
       alert("Error exporting todos. Check console for details.");
+    }
+  };
+
+  // Function to add new todo/memory
+  const handleAddTodo = async (newTodo) => {
+    try {
+      const response = await fetch("/.netlify/functions/todos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newTodo),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error adding todo.");
+      }
+
+      // Refresh todos list
+      const newTodoData = await response.json();
+      setTodos((prevTodos) => [...prevTodos, newTodoData]);
+    } catch (error) {
+      console.error("Error adding todo:", error);
+      alert("Failed to add todo.");
     }
   };
 
