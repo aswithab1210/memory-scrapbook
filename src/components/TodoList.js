@@ -6,11 +6,11 @@ const TodoList = () => {
     const [text, setText] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility state
-    const [isEditMode, setIsEditMode] = useState(false); // Check if it's in edit mode
-    const [editTodoId, setEditTodoId] = useState(null); // Store the ID of the todo being edited
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editTodoId, setEditTodoId] = useState(null);
 
-    // Fetch todos from the backend
+
     const fetchTodos = async () => {
         setLoading(true);
         try {
@@ -24,23 +24,22 @@ const TodoList = () => {
         }
     };
 
-    // Add or update a todo
+
     const saveTodo = async () => {
         if (!text.trim()) return;
         setLoading(true);
         try {
             if (isEditMode) {
-                // Update an existing todo
-                await axios.put('/.netlify/functions/todos', { id: editTodoId, text, completed: false }); // Include the text
-            } else {
-                // Add a new todo
+                await axios.put('/.netlify/functions/todos', { id: editTodoId, text, completed: false });
+            } else 
+            {
                 await axios.post('/.netlify/functions/todos', { text });
             }
             setText('');
             fetchTodos();
-            setIsModalOpen(false); // Close the modal after saving
-            setIsEditMode(false); // Reset edit mode
-            setEditTodoId(null); // Reset edit todo ID
+            setIsModalOpen(false);
+            setIsEditMode(false);
+            setEditTodoId(null);
         } catch (error) {
             console.error('Error saving todo:', error);
             setError('An error occurred while saving the todo.');
@@ -49,7 +48,7 @@ const TodoList = () => {
         }
     };
 
-    // Toggle todo completion status
+
     const toggleTodo = async (id, completed) => {
         setLoading(true);
         try {
@@ -63,7 +62,7 @@ const TodoList = () => {
         }
     };
 
-    // Delete a todo
+
     const deleteTodo = async (id) => {
         setLoading(true);
         try {
@@ -77,7 +76,7 @@ const TodoList = () => {
         }
     };
 
-    // Open the modal in edit mode
+
     const editTodo = (id, currentText) => {
         setIsEditMode(true);
         setEditTodoId(id);
@@ -85,30 +84,30 @@ const TodoList = () => {
         setIsModalOpen(true);
     };
 
-    // UseEffect to fetch todos when component mounts
+
     useEffect(() => {
         fetchTodos();
     }, []);
 
     return (
-        <div className="p-4 max-w-md mx-auto">
-            <h1 className="text-2xl mb-4">My To-Do List</h1>
+        <div className="p-4 max-w-6xl mx-auto">
+            <h1 className="text-2xl mb-4 font-bold text-center">My To-Do List</h1>
 
-            {/* Display loading state */}
-            {loading && <p>Loading...</p>}
+            {loading && <p className="text-center">Loading...</p>}
+            {error && <p className="text-red-500 text-center">{error}</p>}
 
-            {/* Display error if there's one */}
-            {error && <p className="text-red-500">{error}</p>}
+            <div className="flex justify-center mb-6">
+                <button
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                    onClick={() => setIsModalOpen(true)}
+                >
+                    Add New Todo
+                </button>
+            </div>
 
-            {/* Button to open modal */}
-            <button
-                className="bg-blue-500 text-white px-4 py-2 mb-4"
-                onClick={() => setIsModalOpen(true)}
-            >
-                Add New Todo
-            </button>
 
-            {/* Modal */}
+
+
             {isModalOpen && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-80">
@@ -123,14 +122,14 @@ const TodoList = () => {
                         </div>
                         <div className="flex justify-end gap-2">
                             <button
-                                className="bg-blue-500 text-white px-4 py-2"
+                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                                 onClick={saveTodo}
                             >
                                 {isEditMode ? 'Save Changes' : 'Add'}
                             </button>
                             <button
-                                className="bg-gray-300 text-gray-700 px-4 py-2"
-                                onClick={() => setIsModalOpen(false)} // Close modal
+                                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400"
+                                onClick={() => setIsModalOpen(false)}
                             >
                                 Cancel
                             </button>
@@ -139,10 +138,9 @@ const TodoList = () => {
                 </div>
             )}
 
-            {/* Render todo list */}
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {todos.map(todo => (
-                    <div key={todo._id} className="bg-white p-4 rounded-lg shadow-md">
+                    <div key={todo._id} className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition">
                         <div className="flex justify-between items-center">
                             <span
                                 onClick={() => toggleTodo(todo._id, todo.completed)}
@@ -152,14 +150,14 @@ const TodoList = () => {
                             </span>
                             <div className="flex space-x-2">
                                 <button
-                                    className="text-yellow-500"
-                                    onClick={() => editTodo(todo._id, todo.text)} // Edit button
+                                    className="text-yellow-500 hover:text-yellow-600"
+                                    onClick={() => editTodo(todo._id, todo.text)}
                                 >
                                     Edit
                                 </button>
                                 <button
-                                    className="text-red-500"
-                                    onClick={() => deleteTodo(todo._id)} // Delete button
+                                    className="text-red-500 hover:text-red-600"
+                                    onClick={() => deleteTodo(todo._id)}
                                 >
                                     X
                                 </button>
