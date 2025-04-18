@@ -5,6 +5,7 @@ import AddMemoryForm from "./components/AddMemoryForm";
 import axios from "axios";
 import Papa from "papaparse";
 import Sidebar from "./components/sidebar";
+import TopNav from "./components/TopNav";
 
 const App = () => {
   const [memories, setMemories] = useState([]);
@@ -90,14 +91,7 @@ const App = () => {
   return (
     <div className="flex flex-col h-screen">
       {/* Top Nav */}
-      <div className="fixed top-0 left-0 right-0 bg-gray-900 text-white p-4 z-10 shadow-md">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Memory Scrapbook</h1>
-          <div className="flex items-center space-x-4">
-            <span className="text-gray-300">Welcome, User!</span>
-          </div>
-        </div>
-      </div>
+      <TopNav/>
 
       {/* Layout */}
       <div className="flex flex-1 pt-16 pb-16 sm:pb-0">
