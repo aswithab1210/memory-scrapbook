@@ -47,16 +47,17 @@ const TodoList = () => {
         }
     };
 
-    const uploadImageToS3 = async (file) => {
+    const uploadImageToCloudinary = async (file) => {
         try {
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('upload_preset', 'todo-list'); // Cloudinary preset name 'todo-list'
 
-            // Assuming you have a backend function for uploading to S3
-            const response = await axios.post('/.netlify/functions/upload-s3', formData);
-            return response.data.imageUrl;
+            // Assuming you have Cloudinary upload function configured in your backend
+            const response = await axios.post('https://api.cloudinary.com/v1_1/dyjdf1px0/image/upload', formData);
+            return response.data.secure_url;  // Return the Cloudinary URL
         } catch (error) {
-            console.error('Error uploading image to S3:', error);
+            console.error('Error uploading image to Cloudinary:', error);
             throw new Error('Image upload failed');
         }
     };
@@ -68,7 +69,7 @@ const TodoList = () => {
         try {
             let uploadedImageUrl = null;
             if (image && typeof image !== 'string') {
-                uploadedImageUrl = await uploadImageToS3(image); // Upload to S3 if an image is provided
+                uploadedImageUrl = await uploadImageToCloudinary(image); // Upload to Cloudinary if an image is provided
             }
 
             const todoData = { text, image: uploadedImageUrl || image };
