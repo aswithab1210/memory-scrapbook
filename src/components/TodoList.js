@@ -125,7 +125,7 @@ const TodoList = () => {
                 >
                     {/* Display + on small screens and "Add New Todo" on larger screens */}
                     <FaPlus className="sm:hidden text-2xl" /> {/* Only visible on small screens */}
-                    <span className="hidden sm:block">Add New Todo</span> {/* Only visible on larger screens */}
+                    <span className="hidden sm:block">Add New Memory</span> {/* Only visible on larger screens */}
                 </button>
             </div>
 
@@ -133,7 +133,7 @@ const TodoList = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-80">
-                        <h2 className="text-xl mb-4">{isEditMode ? 'Edit Todo' : 'Add a New Todo'}</h2>
+                        <h2 className="text-xl mb-4">{isEditMode ? 'Edit The Memory' : 'Add a New Memory'}</h2>
 
                         <div className="flex flex-col gap-2 mb-2">
                             <input
