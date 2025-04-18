@@ -91,18 +91,18 @@ const TodoList = () => {
     }, []);
 
     return (
-        <div className="p-4 max-w-md mx-auto">
-            <h1 className="text-2xl mb-4">My To-Do List</h1>
+        <div className="p-8 max-w-4xl mx-auto bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg shadow-xl">
+            <h1 className="text-4xl text-white text-center mb-6 font-bold tracking-wide">My Futuristic To-Do List</h1>
 
             {/* Display loading state */}
-            {loading && <p>Loading...</p>}
+            {loading && <p className="text-white text-center">Loading...</p>}
 
             {/* Display error if there's one */}
-            {error && <p className="text-red-500">{error}</p>}
+            {error && <p className="text-red-500 text-center">{error}</p>}
 
             {/* Button to open modal */}
             <button
-                className="bg-blue-500 text-white px-4 py-2 mb-4"
+                className="bg-gradient-to-r from-pink-500 to-orange-500 text-white px-6 py-3 rounded-full shadow-md hover:shadow-lg focus:outline-none mb-6 transform transition duration-300 hover:scale-105"
                 onClick={() => setIsModalOpen(true)}
             >
                 Add New Todo
@@ -110,26 +110,26 @@ const TodoList = () => {
 
             {/* Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-80">
-                        <h2 className="text-xl mb-4">{isEditMode ? 'Edit Todo' : 'Add a New Todo'}</h2>
-                        <div className="flex mb-2">
+                <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center z-50">
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-96 backdrop-blur-lg bg-opacity-30">
+                        <h2 className="text-xl text-white mb-4 text-center">{isEditMode ? 'Edit Todo' : 'Add a New Todo'}</h2>
+                        <div className="flex mb-4">
                             <input
-                                className="border p-2 flex-grow"
+                                className="border border-gray-400 p-2 w-full rounded-lg bg-transparent text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 value={text}
                                 onChange={(e) => setText(e.target.value)}
-                                placeholder="New Task"
+                                placeholder="Enter your task"
                             />
                         </div>
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-4">
                             <button
-                                className="bg-blue-500 text-white px-4 py-2"
+                                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg focus:outline-none"
                                 onClick={saveTodo}
                             >
                                 {isEditMode ? 'Save Changes' : 'Add'}
                             </button>
                             <button
-                                className="bg-gray-300 text-gray-700 px-4 py-2"
+                                className="bg-gray-600 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg focus:outline-none"
                                 onClick={() => setIsModalOpen(false)} // Close modal
                             >
                                 Cancel
@@ -140,30 +140,28 @@ const TodoList = () => {
             )}
 
             {/* Render todo list */}
-            <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-6">
                 {todos.map(todo => (
-                    <div key={todo._id} className="bg-white p-4 rounded-lg shadow-md">
-                        <div className="flex justify-between items-center">
-                            <span
-                                onClick={() => toggleTodo(todo._id, todo.completed)}
-                                className={`cursor-pointer ${todo.completed ? 'line-through text-gray-400' : ''}`}
+                    <div key={todo._id} className="bg-gradient-to-r from-blue-400 to-purple-600 p-4 rounded-xl shadow-lg flex justify-between items-center hover:scale-105 transform transition duration-300">
+                        <span
+                            onClick={() => toggleTodo(todo._id, todo.completed)}
+                            className={`cursor-pointer text-white text-lg ${todo.completed ? 'line-through text-gray-400' : 'hover:text-yellow-300'}`}
+                        >
+                            {todo.text}
+                        </span>
+                        <div className="flex space-x-4">
+                            <button
+                                className="text-yellow-500 hover:text-yellow-300"
+                                onClick={() => editTodo(todo._id, todo.text)} // Edit button
                             >
-                                {todo.text}
-                            </span>
-                            <div className="flex space-x-2">
-                                <button
-                                    className="text-yellow-500"
-                                    onClick={() => editTodo(todo._id, todo.text)} // Edit button
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    className="text-red-500"
-                                    onClick={() => deleteTodo(todo._id)} // Delete button
-                                >
-                                    X
-                                </button>
-                            </div>
+                                ✎
+                            </button>
+                            <button
+                                className="text-red-500 hover:text-red-300"
+                                onClick={() => deleteTodo(todo._id)} // Delete button
+                            >
+                                ✘
+                            </button>
                         </div>
                     </div>
                 ))}
